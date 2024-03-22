@@ -1,0 +1,57 @@
+---
+- name: Setup Node
+  become: yes
+  block:
+    - name: "Download Node.js v{{ node_version }} setup script"
+      ansible.builtin.get_url:
+        url: "https://deb.nodesource.com/setup_{{ node_version }}.x"
+        dest: "/tmp/setup_nodejs_{{ node_version }}.sh"
+        mode: '0775'
+
+    - name: "Run the Node.js setup script"
+      ansible.builtin.shell: "/tmp/setup_nodejs_{{ node_version }}.sh"
+      args:
+        removes: "/tmp/setup_nodejs_{{ node_version }}.sh"
+
+    - name: "Install Node.js"
+      ansible.builtin.apt:
+        name: nodejs
+        state: present
+
+- name: Install PM2 globally
+  ansible.builtin.npm:
+    name: pm2
+    global: yes
+    state: present
+
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: latest
+
+- name: Install curl
+  ansible.builtin.apt:
+    name: curl
+    state: present
+
+- name: Start and enable Nginx service
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Allow SSH connections through the firewall
+  ansible.builtin.ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: Allow HTTP and HTTPS through the firewall
+  ansible.builtin.ufw:
+    rule: allow
+    name: 'Nginx Full'
+
+- name: Enable UFW
+  ansible.builtin.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming

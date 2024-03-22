@@ -1,0 +1,17 @@
+---
+- name: Clone the specific repo
+  ansible.builtin.git:
+    repo: "{{ git_url }}"
+    dest: "{{ app_directory }}"
+    clone: yes
+    update: yes
+
+- name: Install dependencies with npm
+  ansible.builtin.shell:
+    chdir: "{{ app_directory }}"
+    cmd: npm install
+
+- name: Build app with npm
+  ansible.builtin.shell:
+    chdir: "{{ app_directory }}"
+    cmd: npm run build

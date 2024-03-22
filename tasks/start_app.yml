@@ -1,0 +1,61 @@
+---
+- include_vars: "vars/secret_{{ client_name }}.yml"
+  name: Include AWS creds
+
+- name: Check if the backend application is responding on each server
+  become: no
+  ansible.builtin.uri:
+    url: "http://localhost:3001"
+    method: GET
+    return_content: yes
+  loop: "{{ query('inventory_hostnames', 'webservers') }}"
+  register: responses
+  ignore_errors: yes
+
+- name: Show responses from all backend applications
+  ansible.builtin.debug:
+    msg: "Response from {{ item.item }} ({{ hostvars[item.item].ansible_host }}): {{ item.content if item.status == 200 else 'Failed to connect' }}"
+  loop: "{{ responses.results }}"
+  when: responses.results | length > 0
+
+- name: Determine if any backend applications are not responding
+  set_fact:
+    start_backend: "{{ responses.results | selectattr('status', '!=', 200) | map(attribute='item') | list | length > 0 }}"
+
+- name: Print the start_backend variable
+  ansible.builtin.debug:
+    msg: "Start backend: {{ start_backend }}"
+
+- name: Start the backend application with PM2
+  become: no
+  ansible.builtin.shell:
+    chdir: "{{ app_directory }}"
+    cmd: pm2 start ./server/app.js --name backend
+  environment:
+    NODE_ENV: production
+    AWS_ACCESS_KEY_ID: "{{ AWS_ACCESS_KEY_ID }}"
+    AWS_SECRET_ACCESS_KEY: "{{ AWS_SECRET_ACCESS_KEY }}"
+  # register: backend_service_started
+  when: start_backend | bool
+  ignore_errors: yes
+
+# - name: Start the React frontend application with PM2
+#   ansible.builtin.shell:
+#     chdir: "{{ app_directory }}"
+#     cmd: pm2 start npm --name frontend -- run dev -- --port 3000
+#   when: backend_service_started is defined
+
+- name: Check if the backend application is responding after attempting to start
+  ansible.builtin.uri:
+    url: "http://localhost:3001"
+    method: GET
+    return_content: yes
+  loop: "{{ query('inventory_hostnames', 'webservers') }}"
+  register: final_responses
+  ignore_errors: yes
+
+- name: Show final responses from all backend applications
+  ansible.builtin.debug:
+    msg: "Final response from {{ item.item }} ({{ hostvars[item.item].ansible_host }}): {{ item.content if item.status == 200 else 'Failed to connect' }}"
+  loop: "{{ final_responses.results }}"
+  when: final_responses.results | length > 0

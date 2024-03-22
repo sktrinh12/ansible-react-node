@@ -1,0 +1,24 @@
+server {
+    {% if domain_name is defined and domain_name %}
+    listen 80;
+    server_name {{ domain_name }};
+    {% else %}
+    listen 80;
+    listen [::]:80;
+    {% endif %}
+
+    location / {
+        root {{ app_root }}/dist;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api {
+        proxy_pass http://localhost:{{ node_server_port }};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}

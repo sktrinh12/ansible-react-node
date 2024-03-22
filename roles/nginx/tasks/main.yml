@@ -1,0 +1,18 @@
+- name: Copy Nginx configuration from template
+  template:
+    src: "{{ nginx_config_template }}"
+    dest: "{{ nginx_config_dest }}/react-app.conf"
+    mode: 0644
+
+- name: Create symbolic link for react-app.conf
+  file:
+    src: /etc/nginx/sites-available/react-app.conf
+    dest: /etc/nginx/sites-enabled/react-app.conf
+    state: link
+
+- name: Remove default symbolic link
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify:
+    - reload nginx

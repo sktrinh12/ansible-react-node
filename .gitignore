@@ -1,0 +1,38 @@
+# Ansible retry files
+*.retry
+
+# Ansible output files
+*.out
+
+# Ansible log files
+*.log
+
+# Ansible temp files
+*.tmp
+
+# Ansible vault files (if you're not using Ansible Vault)
+*.vault
+
+# Ansible vault password files
+*.vault_pass
+
+# Ansible role requirements files
+requirements.yml
+
+# Ansible inventory files (if you're not using dynamic inventory)
+inventory
+hosts
+pems
+vars
+
+# Ansible local files
+*.local
+
+# Ansible backup files
+*~
+
+# Ansible .retry temp files
+.retry_hosts
+
+# Ansible collections
+collections/

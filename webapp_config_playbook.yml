@@ -1,0 +1,14 @@
+---
+- hosts: webservers
+  become: yes
+  vars_files:
+    - vars_file.yml
+  pre_tasks:
+    - name: Include initial setup tasks
+      include_tasks: tasks/tasks.yml
+    - name: Include Git repository and npm tasks
+      include_tasks: tasks/git_repo.yml
+    - name: Include application start and check tasks
+      include_tasks: tasks/start_app.yml
+  roles:
+  - role: nginx
