@@ -4,8 +4,7 @@
 
 This Ansible playbook is designed to set up a a react-js web application. The playbook performs the following tasks:
 
-    Installs Node, PM2, nginx, curl, open ports for communications and test
-    	backend service once started
+    Installs Node, PM2, nginx, curl, open ports for communications and test backend service once started
     Includes secret variables from a separate file
     Starts the backend Node.js application using PM2, specifying the entry point (./server/app.js) and setting the environment variables NODE_ENV, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY.
     Starts the React frontend application using nginx
